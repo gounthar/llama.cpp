@@ -117,7 +117,9 @@ jobs:
             </details>
 
             **Linux:**
-            - [Ubuntu riscv64 (CPU)](https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.name }}/llama-${{ steps.tag.outputs.name }}-bin-ubuntu-riscv64.tar.gz)
+            - [Ubuntu riscv64 — SpacemiT K1 native (CPU, rv64gcv_zvfh)](https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.name }}/llama-${{ steps.tag.outputs.name }}-bin-ubuntu-riscv64.tar.gz)
+
+            > **Note:** Built with `GGML_NATIVE=ON` on a SpacemiT K1 (BananaPi F3). Requires rv64gcv with zvfh extension. May not run on other riscv64 CPUs.
 
       - name: Upload release
         id: upload_release

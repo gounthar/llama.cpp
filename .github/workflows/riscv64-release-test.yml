@@ -1,0 +1,56 @@
+name: Release riscv64 (RISE runner test)
+
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  ubuntu-riscv64-cpu:
+    runs-on: ubuntu-24.04-riscv
+
+    steps:
+      - name: Clone
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev
+
+      - name: Build
+        run: |
+          cmake -B build \
+            -DCMAKE_INSTALL_RPATH='$ORIGIN' \
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+            -DGGML_BACKEND_DL=ON \
+            -DGGML_NATIVE=OFF \
+            -DGGML_CPU_ALL_VARIANTS=ON \
+            -DLLAMA_FATAL_WARNINGS=ON
+          time cmake --build build --config Release -j $(nproc)
+
+      - name: Determine tag name
+        id: tag
+        run: |
+          SHORT_HASH="$(git rev-parse --short=7 HEAD)"
+          echo "name=test-riscv64-${SHORT_HASH}" >> $GITHUB_OUTPUT
+
+      - name: Pack artifacts
+        run: |
+          cp LICENSE ./build/bin/
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-riscv64.tar.gz \
+            --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+
+      - name: Verify binaries
+        run: |
+          file ./build/bin/llama-cli
+          file ./build/bin/llama-server
+          ls -lh llama-*-bin-ubuntu-riscv64.tar.gz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama-bin-ubuntu-riscv64.tar.gz
+          path: llama-*-bin-ubuntu-riscv64.tar.gz

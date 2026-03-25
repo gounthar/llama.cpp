@@ -23,11 +23,8 @@ jobs:
       - name: Build
         run: |
           cmake -B build \
-            -DCMAKE_INSTALL_RPATH='$ORIGIN' \
-            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-            -DGGML_BACKEND_DL=ON \
+            -DCMAKE_BUILD_TYPE=Release \
             -DGGML_NATIVE=OFF \
-            -DGGML_CPU_ALL_VARIANTS=ON \
             -DLLAMA_FATAL_WARNINGS=ON
           time cmake --build build --config Release -j $(nproc)
 

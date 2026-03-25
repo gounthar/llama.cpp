@@ -25,6 +25,7 @@ jobs:
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DGGML_NATIVE=OFF \
+            -DGGML_RVV=OFF \
             -DLLAMA_FATAL_WARNINGS=ON
           time cmake --build build --config Release -j $(nproc)
 

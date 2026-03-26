@@ -1,0 +1,40 @@
+name: Build on BananaPi F3 (riscv64)
+
+on:
+  push:
+    branches: [ci/riscv64-f3-build-proof]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build-f3:
+    name: Build llama.cpp (BananaPi F3, rv64gc, GCC 14)
+    runs-on: [self-hosted, linux, riscv64]
+    steps:
+      - name: Clone
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: System info
+        run: |
+          uname -a
+          gcc --version | head -1
+          cat /proc/cpuinfo | grep isa | head -1
+          free -h | head -2
+
+      - name: Build (Release, native)
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DGGML_NATIVE=ON \
+            -DLLAMA_BUILD_SERVER=ON
+          /usr/bin/time -v cmake --build build --config Release -j 8 2>&1
+
+      - name: Verify binaries
+        run: |
+          file build/bin/llama-cli
+          file build/bin/llama-server
+          ls -lh build/bin/llama-cli build/bin/llama-server
+          build/bin/llama-cli --version || true

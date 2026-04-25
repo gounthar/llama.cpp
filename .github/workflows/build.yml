@@ -838,10 +838,6 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          # Install necessary packages
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev
-
           # Set gcc-14 and g++-14 as the default compilers
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
@@ -874,6 +870,7 @@ jobs:
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DGGML_OPENMP=OFF \
+            -DLLAMA_OPENSSL=OFF \
             -DLLAMA_BUILD_EXAMPLES=ON \
             -DLLAMA_BUILD_TOOLS=ON \
             -DLLAMA_BUILD_TESTS=ON \

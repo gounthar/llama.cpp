@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
 
 jobs:
   sync:
@@ -46,39 +45,26 @@ jobs:
         if: steps.merge.outputs.merged == 'true'
         run: git push origin HEAD:master
 
-      - name: Open issue on conflict
+      - name: Report conflict
         if: failure() && steps.merge.outputs.conflict == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const title = 'Upstream sync conflict';
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'sync-conflict',
-            });
-            if (issues.length > 0) {
-              console.log('Conflict issue already open, skipping.');
-              return;
-            }
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title,
-              body: [
-                'The daily upstream sync failed due to merge conflicts.',
-                '',
-                '**Upstream**: `ggml-org/llama.cpp` `master`',
-                `**Run**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-                '',
-                'Please resolve manually:',
-                '```bash',
-                'git fetch upstream master',
-                'git merge upstream/master',
-                '# fix conflicts',
-                'git push origin master',
-                '```',
-              ].join('\n'),
-              labels: ['sync-conflict'],
-            });
+        run: |
+          {
+            echo "## Upstream sync conflict"
+            echo ""
+            echo "The daily upstream sync failed due to merge conflicts."
+            echo ""
+            echo "**Upstream**: \`ggml-org/llama.cpp\` \`master\`"
+            run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+            run_url="${run_url}/actions/runs/${GITHUB_RUN_ID}"
+            echo "**Run**: ${run_url}"
+            echo ""
+            echo "Resolve manually:"
+            echo '```bash'
+            echo "git fetch upstream master"
+            echo "git merge upstream/master"
+            echo "# fix conflicts"
+            echo "git push origin master"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Upstream sync conflict — see job summary."
+          exit 1

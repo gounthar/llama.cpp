@@ -196,10 +196,10 @@ void quantize_row_q8_K(const float * GGML_RESTRICT x, void * GGML_RESTRICT y, in
 
             // remaining iterations
             vint8m2_t slid_q = v_q;
-            for (size_t k = 16; k < vl; k += 16) {
+            for (size_t ks = 16; ks < vl; ks += 16) {
                 slid_q = __riscv_vslidedown_vx_i8m2(slid_q, 16, vl);
 
-                sum_idx = (offset + k) / 16;
+                sum_idx = (offset + ks) / 16;
                 chunk_m1 = __riscv_vget_v_i8m2_i8m1(slid_q, 0);
 
                 v_sum = __riscv_vwredsum_vs_i8m1_i16m1(chunk_m1, v_zero_sum, 16);
@@ -4286,9 +4286,9 @@ static NOINLINE void ggml_vec_dot_tq2_0_q8_K_vl128(const int n, float * GGML_RES
                 // Unpack
                 vuint8m2_t t0 = __riscv_vand_vx_u8m2(vx_u8, 0x03, vl);
                 vint8m2_t vq = __riscv_vsub_vx_i8m2(__riscv_vreinterpret_v_u8m2_i8m2(t0), 1, vl);
-                vint8m2_t vy = __riscv_vle8_v_i8m2(py0, vl);
+                vint8m2_t vy_vec = __riscv_vle8_v_i8m2(py0, vl);
                 // Accumulate
-                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy, vl);
+                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy_vec, vl);
             }
             __asm__ volatile("" ::: "memory");
             // Process bits 3:2
@@ -4297,8 +4297,8 @@ static NOINLINE void ggml_vec_dot_tq2_0_q8_K_vl128(const int n, float * GGML_RES
                 t1 = __riscv_vand_vx_u8m2(t1, 0x03, vl);
                 vint8m2_t vq = __riscv_vsub_vx_i8m2(__riscv_vreinterpret_v_u8m2_i8m2(t1), 1, vl);
 
-                vint8m2_t vy = __riscv_vle8_v_i8m2(py1, vl);
-                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy, vl);
+                vint8m2_t vy_vec = __riscv_vle8_v_i8m2(py1, vl);
+                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy_vec, vl);
             }
             __asm__ volatile("" ::: "memory");
             // Process bits 5:4
@@ -4307,8 +4307,8 @@ static NOINLINE void ggml_vec_dot_tq2_0_q8_K_vl128(const int n, float * GGML_RES
                 t2 = __riscv_vand_vx_u8m2(t2, 0x03, vl);
                 vint8m2_t vq = __riscv_vsub_vx_i8m2(__riscv_vreinterpret_v_u8m2_i8m2(t2), 1, vl);
 
-                vint8m2_t vy = __riscv_vle8_v_i8m2(py2, vl);
-                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy, vl);
+                vint8m2_t vy_vec = __riscv_vle8_v_i8m2(py2, vl);
+                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy_vec, vl);
             }
             __asm__ volatile("" ::: "memory");
             // Process bits 7:6
@@ -4316,8 +4316,8 @@ static NOINLINE void ggml_vec_dot_tq2_0_q8_K_vl128(const int n, float * GGML_RES
                 vuint8m2_t t3 = __riscv_vsrl_vx_u8m2(vx_u8, 6, vl);
                 vint8m2_t vq = __riscv_vsub_vx_i8m2(__riscv_vreinterpret_v_u8m2_i8m2(t3), 1, vl);
 
-                vint8m2_t vy = __riscv_vle8_v_i8m2(py3, vl);
-                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy, vl);
+                vint8m2_t vy_vec = __riscv_vle8_v_i8m2(py3, vl);
+                vacc16 = __riscv_vwmacc_vv_i16m4(vacc16, vq, vy_vec, vl);
             }
             __asm__ volatile("" ::: "memory");
             vl = __riscv_vsetvl_e16m4(32);

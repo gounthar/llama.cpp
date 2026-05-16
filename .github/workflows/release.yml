@@ -36,13 +36,8 @@ env:
   CMAKE_ARGS: "-DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_TOOLS=ON -DLLAMA_BUILD_SERVER=ON -DGGML_RPC=ON"
 
 jobs:
-  webui-build:
-    name: Build WebUI
-    uses: ./.github/workflows/webui-build.yml
 
   macOS-cpu:
-    needs:
-      - webui-build
 
     strategy:
       matrix:
@@ -71,11 +66,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -104,7 +100,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-macos-${{ matrix.build }}.tar.gz -s ",./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-macos-${{ matrix.build }}.tar.gz -s ",^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -113,8 +109,6 @@ jobs:
           name: llama-bin-macos-${{ matrix.build }}.tar.gz
 
   ubuntu-cpu:
-    needs:
-      - webui-build
 
     strategy:
       matrix:
@@ -137,11 +131,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         if: ${{ matrix.build != 's390x' && matrix.build != 'riscv64' }}
@@ -184,7 +179,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-${{ matrix.build }}.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-${{ matrix.build }}.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -193,8 +188,6 @@ jobs:
           name: llama-bin-ubuntu-${{ matrix.build }}.tar.gz
 
   ubuntu-vulkan:
-    needs:
-      - webui-build
 
     strategy:
       matrix:
@@ -213,11 +206,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -261,7 +255,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-vulkan-${{ matrix.build }}.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-vulkan-${{ matrix.build }}.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -270,8 +264,6 @@ jobs:
           name: llama-bin-ubuntu-vulkan-${{ matrix.build }}.tar.gz
 
   android-arm64:
-    needs:
-      - webui-build
 
     runs-on: ubuntu-latest
 
@@ -285,11 +277,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -339,7 +332,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-android-arm64.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-android-arm64.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -348,8 +341,6 @@ jobs:
           name: llama-bin-android-arm64.tar.gz
 
   ubuntu-24-openvino:
-    needs:
-      - webui-build
 
     runs-on: ubuntu-24.04
 
@@ -372,11 +363,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -428,7 +420,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/ReleaseOV/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-openvino-${{ env.OPENVINO_VERSION_MAJOR }}-x64.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/ReleaseOV/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-openvino-${{ env.OPENVINO_VERSION_MAJOR }}-x64.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/ReleaseOV/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -437,8 +429,6 @@ jobs:
           name: llama-bin-ubuntu-openvino-${{ env.OPENVINO_VERSION_MAJOR }}-x64.tar.gz
 
   windows-cpu:
-    needs:
-      - webui-build
 
     runs-on: windows-2025
 
@@ -454,11 +444,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -498,8 +489,6 @@ jobs:
           name: llama-bin-win-cpu-${{ matrix.arch }}.zip
 
   windows:
-    needs:
-      - webui-build
 
     runs-on: windows-2025
 
@@ -524,11 +513,12 @@ jobs:
         id: checkout
         uses: actions/checkout@v6
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -589,8 +579,6 @@ jobs:
           name: llama-bin-win-${{ matrix.backend }}-${{ matrix.arch }}.zip
 
   windows-cuda:
-    needs:
-      - webui-build
 
     runs-on: windows-2022
 
@@ -603,11 +591,12 @@ jobs:
         id: checkout
         uses: actions/checkout@v6
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: Install ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -669,8 +658,6 @@ jobs:
           name: cudart-llama-bin-win-cuda-${{ matrix.cuda }}-x64.zip
 
   windows-sycl:
-    needs:
-      - webui-build
 
     runs-on: windows-2022
 
@@ -710,11 +697,12 @@ jobs:
           Expand-Archive -Path "level-zero-win-sdk.zip" -DestinationPath "C:/level-zero-sdk" -Force
           "LEVEL_ZERO_V1_SDK_PATH=C:/level-zero-sdk" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -783,8 +771,6 @@ jobs:
           name: llama-bin-win-sycl-x64.zip
 
   ubuntu-24-sycl:
-    needs:
-      - webui-build
 
     strategy:
       matrix:
@@ -833,11 +819,12 @@ jobs:
           wget -q "https://github.com/oneapi-src/level-zero/releases/download/v${LEVEL_ZERO_VERSION}/level-zero-devel_${LEVEL_ZERO_VERSION}%2B${LEVEL_ZERO_UBUNTU_VERSION}_amd64.deb" -O level-zero-devel.deb
           sudo apt-get install -y ./level-zero.deb ./level-zero-devel.deb
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: ccache
         uses: ggml-org/ccache-action@v1.2.21
@@ -869,7 +856,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-sycl-${{ matrix.build }}-x64.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-sycl-${{ matrix.build }}-x64.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -878,8 +865,6 @@ jobs:
           name: llama-bin-ubuntu-sycl-${{ matrix.build }}-x64.tar.gz
 
   ubuntu-22-rocm:
-    needs:
-      - webui-build
 
     runs-on: ubuntu-22.04
 
@@ -897,11 +882,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: Free up disk space
         uses: ggml-org/free-disk-space@v1.3.1
@@ -981,7 +967,7 @@ jobs:
         id: pack_artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-rocm-${{ env.ROCM_VERSION_SHORT }}-${{ matrix.build }}.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-ubuntu-rocm-${{ env.ROCM_VERSION_SHORT }}-${{ matrix.build }}.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -990,8 +976,6 @@ jobs:
           name: llama-bin-ubuntu-rocm-${{ env.ROCM_VERSION_SHORT }}-${{ matrix.build }}.tar.gz
 
   windows-hip:
-    needs:
-      - webui-build
 
     runs-on: windows-2022
 
@@ -1009,11 +993,12 @@ jobs:
         id: checkout
         uses: actions/checkout@v6
 
-      - name: Download WebUI build artifact
-        uses: actions/download-artifact@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          name: webui-build
-          path: tools/server/public/
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "tools/ui/package-lock.json"
 
       - name: Grab rocWMMA package
         id: grab_rocwmma
@@ -1242,7 +1227,7 @@ jobs:
       - name: Pack artifacts
         run: |
           cp LICENSE ./build/bin/
-          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-${{ matrix.chip_type }}-openEuler-${{ matrix.arch }}${{ matrix.use_acl_graph == 'on' && '-aclgraph' || '' }}.tar.gz --transform "s,./,llama-${{ steps.tag.outputs.name }}/," -C ./build/bin .
+          tar -czvf llama-${{ steps.tag.outputs.name }}-bin-${{ matrix.chip_type }}-openEuler-${{ matrix.arch }}${{ matrix.use_acl_graph == 'on' && '-aclgraph' || '' }}.tar.gz --transform "s,^\.,llama-${{ steps.tag.outputs.name }}," -C ./build/bin .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -1261,7 +1246,6 @@ jobs:
     runs-on: ubuntu-slim
 
     needs:
-      - webui-build
       - windows
       - windows-cpu
       - windows-cuda
@@ -1407,14 +1391,14 @@ jobs:
               }
             }
 
-  webui-publish:
+  ui-publish:
     if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/master' ) || github.event.inputs.create_release == 'true' }}
 
     needs:
       - release
 
-    uses: ./.github/workflows/webui-publish.yml
+    uses: ./.github/workflows/ui-publish.yml
     with:
       version_tag: ${{ needs.release.outputs.tag_name }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_WEBUI_STATIC_OUTPUT }}
+      hf_token: ${{ secrets.HF_TOKEN_UI_STATIC_OUTPUT }}

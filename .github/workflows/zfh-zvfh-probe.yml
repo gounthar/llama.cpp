@@ -1,0 +1,90 @@
+name: zfh-zvfh probe
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    name: probe half-float ISA
+    runs-on: ubuntu-24.04-riscv
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - name: Identify runner
+        run: |
+          echo "hostname: $(hostname)"
+          echo "--- /proc/cpuinfo isa ---"
+          grep -m1 -i isa /proc/cpuinfo || true
+          echo "--- uname ---"
+          uname -a
+
+      - name: Write probes
+        run: |
+          cat > scalar_zfh.c <<'EOF'
+          #include <stdio.h>
+          int main(void) {
+            volatile _Float16 a = 1.5, b = 2.25, c;
+            c = (_Float16)(a + b);
+            printf("scalar zfh OK: %f\n", (double)c);
+            return 0;
+          }
+          EOF
+          cat > vec_v.c <<'EOF'
+          #include <riscv_vector.h>
+          #include <stdio.h>
+          int main(void) {
+            size_t vl = __riscv_vsetvl_e32m1(4);
+            vint32m1_t a = __riscv_vmv_v_x_i32m1(3, vl);
+            vint32m1_t b = __riscv_vadd_vv_i32m1(a, a, vl);
+            int out[4];
+            __riscv_vse32_v_i32m1(out, b, vl);
+            printf("vector V OK: %d\n", out[0]);
+            return 0;
+          }
+          EOF
+          cat > vec_zvfh.c <<'EOF'
+          #include <riscv_vector.h>
+          #include <stdio.h>
+          int main(void) {
+            size_t vl = __riscv_vsetvl_e16m1(8);
+            vfloat16m1_t a = __riscv_vfmv_v_f_f16m1((_Float16)1.5, vl);
+            vfloat16m1_t b = __riscv_vfadd_vv_f16m1(a, a, vl);
+            _Float16 out[8];
+            __riscv_vse16_v_f16m1(out, b, vl);
+            printf("vector zvfh OK: %f\n", (double)out[0]);
+            return 0;
+          }
+          EOF
+
+      - name: Probe
+        run: |
+          CC=$(command -v gcc-14 || command -v gcc)
+          echo "using compiler: $CC"
+          "$CC" --version | head -1
+          probe() {
+            name="$1"; src="$2"; march="$3"
+            set +e
+            "$CC" -O2 -march="$march" -mabi=lp64d "$src" \
+              -o "p_$name" 2>"cc_$name.log"
+            cc=$?
+            if [ "$cc" -ne 0 ]; then
+              echo "RESULT $name: COMPILE-FAIL (march=$march)"
+              sed 's/^/    /' "cc_$name.log"
+              set -e
+              return
+            fi
+            out=$(./"p_$name" 2>&1); rc=$?
+            set -e
+            case "$rc" in
+              0)   echo "RESULT $name: PASS ($out)";;
+              132) echo "RESULT $name: SIGILL rc=132 (illegal insn) m=$march";;
+              *)   echo "RESULT $name: FAIL rc=$rc ($out) march=$march";;
+            esac
+          }
+          echo "=== node $(hostname) ==="
+          probe scalar_zfh  scalar_zfh.c rv64gc_zfh
+          probe vector_v    vec_v.c      rv64gcv
+          probe vector_zvfh vec_zvfh.c   rv64gcv_zfh_zvfh

@@ -3435,9 +3435,14 @@ private:
 
                         slot.n_prompt_tokens_processed++;
 
-                        // stop the prompt batch exactly before a user message
-                        if (spans.is_user_start(slot.prompt.n_tokens())) {
-                            break;
+                        // break at the last user message, or at user messages at least min step past the last checkpoint
+                        if (do_checkpoint && spans.is_user_start(slot.prompt.n_tokens())) {
+                            const auto pos = slot.prompt.n_tokens();
+                            const auto & checkpoints = slot.prompt.checkpoints;
+
+                            if (pos == last_user_pos || checkpoints.empty() || pos > checkpoints.back().n_tokens + params_base.checkpoint_min_step) {
+                                break;
+                            }
                         }
 
                         // process the last few tokens of the prompt separately in order to allow for a checkpoint to be created.
@@ -4188,7 +4193,7 @@ std::unique_ptr<server_res_generator> server_routes::handle_completions_impl(
                 }
             };
 
-            auto effective_should_stop = stream_aware_should_stop(res_this, req.should_stop);
+            auto effective_should_stop = server_stream_aware_should_stop(res_this, req.should_stop);
 
             try {
                 if (effective_should_stop()) {
@@ -4284,7 +4289,7 @@ std::unique_ptr<server_res_generator> server_routes::handle_completions_impl(
 
     // attach a producer pipe to the response when X-Conversation-Id is present.
     // the pipe mirrors SSE chunks into the ring buffer and wires up the cancel hook.
-    stream_session_attach_pipe(*res, req.headers);
+    server_stream_session_attach_pipe(*res, req.headers);
 
     return res;
 }
@@ -4521,6 +4526,7 @@ void server_routes::init_routes() {
             { "default_generation_settings", default_generation_settings_for_props },
             { "total_slots",                 params.n_parallel },
             { "model_alias",                 meta->model_name },
+            { "model_ftype",                 meta->model_ftype },
             { "model_path",                  meta->model_path },
             { "modalities",                  json {
                 {"vision", meta->has_inp_image},

@@ -40,6 +40,7 @@ export type {
 
 // Chat types
 export type {
+	AttachmentMenuItem,
 	ChatUploadedFile,
 	ChatAttachmentDisplayItem,
 	ChatMessageSiblingInfo,
@@ -55,7 +56,9 @@ export type {
 	AttachmentDisplayItemsOptions,
 	FileProcessingResult,
 	FileMentionEntry,
-	ChatFormCommand
+	ChatFormCommand,
+	ChatCommandsOptions,
+	ControlAction
 } from './chat.d';
 
 // Database types
@@ -158,6 +161,22 @@ export type {
 	MCPServerResources
 } from './mcp';
 
+// Search result types
+export type { SearchResult } from './search';
+
+// Glob search types (working-directory / mention pickers)
+export type {
+	GlobEntry,
+	GlobSearchArgs,
+	GlobSearchResult,
+	GlobEntryResult,
+	GlobSearchChildOptions,
+	GlobSearchChildResult
+} from './glob';
+
+// Contenteditable token types (chat form)
+export type { ContentEditableToken } from './contenteditable';
+
 // Agentic types
 export type {
 	AgenticConfig,
@@ -171,11 +190,17 @@ export type {
 	AgenticFlowOptions,
 	AgenticFlowParams,
 	AgenticFlowResult,
-	SteeringMessage
+	SteeringMessage,
+	AgenticSection,
+	ToolResultLine,
+	ContinueIntent
 } from './agentic';
 
+// Navigation types
+export type { DesktopIconStripItem } from './navigation';
+
 // Tools types
-export type { ToolEntry, ToolGroup } from './tools';
+export type { ToolEntry, ToolGroup, BuiltinToolUiEntry } from './tools';
 
 // Reasoning
 export type { ReasoningEffortLevel } from './reasoning';

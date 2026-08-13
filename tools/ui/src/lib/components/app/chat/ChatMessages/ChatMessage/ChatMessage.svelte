@@ -7,15 +7,11 @@
 		ChatMessageSystem,
 		ChatMessageUser
 	} from '$lib/components/app/chat';
-	import { SYSTEM_MESSAGE_PLACEHOLDER } from '$lib/constants';
-	import { REASONING_TAGS } from '$lib/constants/agentic';
-	import { ROUTES } from '$lib/constants/routes';
+	import { REASONING_TAGS, ROUTES, SYSTEM_MESSAGE_PLACEHOLDER } from '$lib/constants';
 	import { getChatActionsContext, setMessageEditContext } from '$lib/contexts';
 	import { AgenticSectionType, AttachmentType, MessageRole } from '$lib/enums';
 	import { DatabaseService } from '$lib/services/database.service';
-	import { chatStore, pendingEditMessageId } from '$lib/stores/chat.svelte';
-	import { conversationsStore } from '$lib/stores/conversations.svelte';
-	import { isMobile } from '$lib/stores/viewport.svelte';
+	import { chatStore, conversationsStore, isMobile } from '$lib/stores';
 	import type { DatabaseMessageExtraMcpPrompt } from '$lib/types';
 	import { deriveAgenticSections } from '$lib/utils';
 	import { parseFilesToMessageExtras } from '$lib/utils/browser-only';
@@ -187,7 +183,7 @@
 	});
 
 	$effect(() => {
-		const pendingId = pendingEditMessageId();
+		const pendingId = chatStore.pendingEditMessageId;
 
 		if (pendingId && pendingId === message.id && !isEditing) {
 			handleEdit();

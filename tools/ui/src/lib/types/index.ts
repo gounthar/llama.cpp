@@ -44,6 +44,14 @@ export type {
 	ChatUploadedFile,
 	ChatAttachmentDisplayItem,
 	ChatMessageSiblingInfo,
+	ChatMessageActions,
+	ChatMessageActionsContext,
+	ChatMessageDeletionInfo,
+	ChatMessageEditContext,
+	ChatMessageEditState,
+	ChatMessageEditActions,
+	ChatMessageAssistantEditActions,
+	ChatFormActionsContext,
 	ChatMessagePromptProgress,
 	ChatMessageTimings,
 	ChatMessageAgenticTimings,
@@ -174,8 +182,8 @@ export type {
 	GlobSearchChildResult
 } from './glob';
 
-// Contenteditable token types (chat form)
-export type { ContentEditableToken } from './contenteditable';
+// ChatFormInputRich token types (chat form)
+export type { ChatFormInputRichToken } from './chat-form-input-rich';
 
 // Agentic types
 export type {
